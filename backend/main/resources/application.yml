@@ -22,6 +22,8 @@ micronaut:
         mapping: /swagger-ui/**
   server:
     port: 8080
+    access-logger:
+      enabled: true
     cors:
       enabled: true
   data:
@@ -46,32 +48,56 @@ micronaut:
         signatures:
           secret:
             generator:
-              secret: "your-secret-key-here-make-it-long-and-secure-in-production"
-    authentication: bearer
-    intercept-url-map:
-      - pattern: /api/auth/login
-        access:
-          - isAnonymous()
-      - pattern: /api/auth/logout
-        access:
-          - isAuthenticated()
-      - pattern: /api/**
-        access:
-          - isAuthenticated()
-      - pattern: /swagger/**
-        access:
-          - isAnonymous()
-      - pattern: /swagger-ui/**
-        access:
-          - isAnonymous()
-      - pattern: /v3/api-docs/**
-        access:
-          - isAnonymous()
-    endpoints:
-      login:
-        enabled: false
-      logout:
-        enabled: false
+              secret: "your-256-bit-secret-key-here-make-it-long-and-secure"
+        claims:
+          roles-name: "roles"
+    rules:
+      - pattern: /api/auth/**
+        access: isAnonymous()
+      - pattern: /api/users/**
+        access: isAuthenticated()
+      - pattern: /**
+        access: isAuthenticated()
+  authentication: bearer
+  intercept-url-map:
+    - pattern: /api/auth/login
+      access:
+        - isAnonymous()
+    - pattern: /api/auth/logout
+      access:
+        - isAuthenticated()
+    - pattern: /api/**
+      access:
+        - isAuthenticated()
+    - pattern: /swagger/**
+      access:
+        - isAnonymous()
+    - pattern: /swagger-ui/**
+      access:
+        - isAnonymous()
+    - pattern: /v3/api-docs/**
+      access:
+        - isAnonymous()
+  endpoints:
+    login:
+      enabled: false
+    logout:
+      enabled: false
+  cors:
+    enabled: true
+    configurations:
+      web:
+        allowedOrigins: "*"
+        allowedMethods: GET,POST,PUT,DELETE,OPTIONS
+        allowedHeaders: "*"
+        exposedHeaders: "*"
+        allowCredentials: true
+        maxAge: 3600
+logger:
+  levels:
+    io.micronaut.security: TRACE
+    io.micronaut.security.rules: TRACE
+    com.yash.usermanagement: DEBUG
 
 datasources:
   default:

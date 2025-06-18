@@ -16,7 +16,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -56,9 +58,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
             // Generate JWT token
             Map<String, Object> claims = new HashMap<>();
+            claims.put("sub", user.getEmail());
             claims.put("userId", user.getId().toString());
             claims.put("email", user.getEmail());
-            claims.put("role", user.getRole().toString());
+            claims.put("roles", user.getRole().toString());
+            claims.put("firstname",user.getFirstName());
+            claims.put("lastname",user.getLastName());
+            // claims.put("iat", System.currentTimeMillis() / 1000);
+            // claims.put("exp", (System.currentTimeMillis() / 1000) + 3600);
+            LOG.info("Generated token claims: {}", claims);
 
             Optional<String> tokenOpt = tokenGenerator.generateToken(claims);
             if (tokenOpt.isEmpty()) {
@@ -72,8 +80,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             response.setUserId(user.getId());
             response.setEmail(user.getEmail());
             response.setRole(user.getRole().toString());
+            response.setFirstName(user.getFirstName());
+            response.setLastName(user.getLastName());
 
-            LOG.info("Login successful for user: {}", user.getEmail());
+            LOG.info("Login successful for user: {} with role: {}", user.getEmail(), user.getRole());
             return response;
 
         } catch (AuthenticationException e) {

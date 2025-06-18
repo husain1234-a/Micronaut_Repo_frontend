@@ -2,6 +2,7 @@ package com.yash.usermanagement.controller;
 
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.*;
+import io.micronaut.security.annotation.Secured;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -48,8 +49,9 @@ public class UserController {
 
     @Post
     @Operation(summary = "Create a new user")
+    @Secured("ADMIN")
     public HttpResponse<UserResponse> createUser(@Body @Valid CreateUserRequest request) {
-        LOG.info("Creating new user");
+        LOG.info("Creating new user with role: {}", request.getRole());
         try {
             User user = convertToUser(request);
             User createdUser = userService.createUser(user);
@@ -72,6 +74,7 @@ public class UserController {
 
     @Get
     @Operation(summary = "Get all users")
+    @Secured("ADMIN")
     public HttpResponse<List<UserResponse>> getAllUsers() {
         LOG.info("Fetching all users");
         List<User> users = userService.getAllUsers();
@@ -83,6 +86,7 @@ public class UserController {
 
     @Get("/{id}")
     @Operation(summary = "Get user by ID")
+    @Secured({ "ADMIN", "USER" })
     public HttpResponse<UserResponse> getUserById(@PathVariable UUID id) {
         LOG.info("Fetching user with id: {}", id);
         try {
@@ -96,6 +100,7 @@ public class UserController {
 
     @Put("/{id}")
     @Operation(summary = "Update user")
+    @Secured({ "ADMIN", "USER" })
     public HttpResponse<UserResponse> updateUser(@PathVariable UUID id, @Body @Valid UpdateUserRequest request) {
         LOG.info("Updating user with id: {}", id);
         try {
@@ -121,6 +126,7 @@ public class UserController {
 
     @Delete("/{id}")
     @Operation(summary = "Delete user")
+    @Secured({ "ADMIN", "USER" })
     public HttpResponse<Void> deleteUser(@PathVariable UUID id) {
         LOG.info("Deleting user with id: {}", id);
         try {
@@ -143,6 +149,7 @@ public class UserController {
 
     @Get("/email/{email}")
     @Operation(summary = "Get user by email")
+    @Secured({ "ADMIN", "USER" })
     public HttpResponse<UserResponse> getUserByEmail(@PathVariable String email) {
         LOG.info("Finding user by email: {}", email);
         try {
@@ -158,6 +165,7 @@ public class UserController {
 
     @Post("/{id}/change-password")
     @Operation(summary = "Request password change")
+    @Secured("USER")
     public HttpResponse<Void> requestPasswordChange(
             @PathVariable UUID id,
             @Body @Valid PasswordChangeRequestDTO request) {
@@ -197,6 +205,7 @@ public class UserController {
 
     @Put("/{id}/approve-password-change")
     @Operation(summary = "Approve password change request")
+    @Secured("ADMIN")
     public HttpResponse<Void> approvePasswordChange(
             @PathVariable UUID id,
             @Body @Valid PasswordChangeApprovalDTO request) {
