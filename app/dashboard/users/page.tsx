@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,19 +9,43 @@ import { useAppContext } from "@/app/providers"
 import { UserDialog } from "@/components/users/user-dialog"
 import { DeleteUserDialog } from "@/components/users/delete-user-dialog"
 import { Plus, Search, Edit, Trash2 } from "lucide-react"
+import { userService } from "../../../src/services/user"
+
+type UserType = {
+  id: string
+  email: string
+  role: string
+  firstName?: string
+  lastName?: string
+  firstname?: string
+  lastname?: string
+  [key: string]: any
+}
 
 export default function UsersPage() {
-  const { state } = useAppContext()
+  const { state, dispatch } = useAppContext()
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedUser, setSelectedUser] = useState<any>(null)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
-  const filteredUsers = state.users.filter(
+  useEffect(() => {
+    async function fetchUsers() {
+      try {
+        const users = await userService.getUsers()
+        dispatch({ type: "SET_USERS", payload: users })
+      } catch (error) {
+        // Optionally handle error
+      }
+    }
+    fetchUsers()
+  }, [dispatch])
+
+  const filteredUsers = (state.users as UserType[]).filter(
     (user) =>
-      user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (user.firstName || user.firstname || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (user.lastName || user.lastname || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
@@ -64,16 +88,16 @@ export default function UsersPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {filteredUsers.map((user) => (
+            {filteredUsers.map((user: UserType) => (
               <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
                 <div className="flex items-center space-x-4">
                   <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-medium">
-                    {user.firstName[0]}
-                    {user.lastName[0]}
+                    {(user.firstName || user.firstname || "")[0]}
+                    {(user.lastName || user.lastname || "")[0]}
                   </div>
                   <div>
                     <h3 className="font-medium">
-                      {user.firstName} {user.lastName}
+                      {(user.firstName || user.firstname) + " " + (user.lastName || user.lastname)}
                     </h3>
                     <p className="text-sm text-gray-500">{user.email}</p>
                   </div>

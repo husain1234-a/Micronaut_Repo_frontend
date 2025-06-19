@@ -60,7 +60,7 @@ public class User {
     @MappedProperty("address_id")
     private UUID addressId;
 
-    @Relation(value = Relation.Kind.ONE_TO_ONE, mappedBy = "id")
+    @Relation(value = Relation.Kind.ONE_TO_ONE)
     private Address address;
 
     // Getters and Setters

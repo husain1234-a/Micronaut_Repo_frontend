@@ -44,8 +44,8 @@ export default function DashboardPage() {
       setLoading(true)
       // Fetch users count
       const users = await userService.getUsers()
-      
-      // Fetch notifications
+
+        // Fetch notifications
       const notifications = await notificationService.getNotifications()
       const unreadCount = notifications.filter((n: Notification) => !n.read).length
 
@@ -56,10 +56,10 @@ export default function DashboardPage() {
       })
     } catch (error) {
       console.error("Error fetching dashboard stats:", error)
-    } finally {
-      setLoading(false)
+      } finally {
+        setLoading(false)
+      }
     }
-  }
 
   if (loading) {
     return (
@@ -70,7 +70,7 @@ export default function DashboardPage() {
   }
 
   if (state.user?.role !== "ADMIN") {
-    return (
+  return (
       <div className="max-w-4xl mx-auto py-8">
         <Card>
           <CardHeader>
@@ -106,7 +106,7 @@ export default function DashboardPage() {
                     </p>
                   </CardContent>
                 </Card>
-              </div>
+                </div>
             </div>
           </CardContent>
         </Card>

@@ -58,5 +58,20 @@ export const userService = {
       console.error(`Error deleting user ${id}:`, error)
       throw error
     }
+  },
+
+  async createUser(userData: any) {
+    try {
+      console.log("Creating user with data:", userData)
+      const response = await api("/users", {
+        method: "POST",
+        body: JSON.stringify(userData),
+      })
+      console.log("User created response:", response)
+      return response
+    } catch (error) {
+      console.error("Error creating user:", error)
+      throw error
+    }
   }
 } 
