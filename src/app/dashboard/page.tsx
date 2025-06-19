@@ -1,165 +1,171 @@
-'use client';
+"use client"
 
-import { useState, useEffect } from 'react';
-import { ProtectedRoute } from '@/components/ProtectedRoute';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useEffect, useState } from "react"
+import { useAppContext } from "@/app/providers"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Users, MapPin, Bell, Settings } from "lucide-react"
+import { userService } from "@/services/user"
+import { notificationService } from "@/services/notifications"
 
-interface Address {
-  id: string;
-  street: string;
-  city: string;
-  state: string;
-  country: string;
+interface DashboardStats {
+  totalUsers: number
+  totalAddresses: number
+  unreadNotifications: number
 }
 
 interface Notification {
-  id: string;
-  message: string;
-  createdAt: string;
+  id: string
+  title: string
+  message: string
+  type: "info" | "success" | "warning" | "error"
+  createdAt: string
+  read: boolean
 }
 
-export default function UserDashboard() {
-  const { user } = useAuth();
-  const [address, setAddress] = useState<Address | null>(null);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [selectedTab, setSelectedTab] = useState('profile');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+export default function DashboardPage() {
+  const { state } = useAppContext()
+  const [stats, setStats] = useState<DashboardStats>({
+    totalUsers: 0,
+    totalAddresses: 0,
+    unreadNotifications: 0
+  })
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (user) {
-      fetchAddress();
-      fetchNotifications();
+    if (state.user?.role === "ADMIN") {
+      fetchDashboardStats()
+    } else {
+      setLoading(false)
     }
-  }, [user]);
+  }, [state.user])
 
-  const fetchAddress = async () => {
+  const fetchDashboardStats = async () => {
     try {
-      const response = await fetch(`/api/addresses/${user?.id}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      const data = await response.json();
-      setAddress(data);
-    } catch (error) {
-      console.error('Error fetching address:', error);
-    }
-  };
+      setLoading(true)
+      // Fetch users count
+      const users = await userService.getUsers()
+      
+      // Fetch notifications
+      const notifications = await notificationService.getNotifications()
+      const unreadCount = notifications.filter((n: Notification) => !n.read).length
 
-  const fetchNotifications = async () => {
-    try {
-      const response = await fetch(`/api/notifications/user/${user?.id}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      const data = await response.json();
-      setNotifications(data);
+      setStats({
+        totalUsers: users.length,
+        totalAddresses: 0, // TODO: Implement address service
+        unreadNotifications: unreadCount
+      })
     } catch (error) {
-      console.error('Error fetching notifications:', error);
+      console.error("Error fetching dashboard stats:", error)
+    } finally {
+      setLoading(false)
     }
-  };
+  }
 
-  const updatePassword = async () => {
-    if (newPassword !== confirmPassword) {
-      alert('Passwords do not match!');
-      return;
-    }
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <p className="text-gray-500">Loading dashboard...</p>
+      </div>
+    )
+  }
 
-    try {
-      await fetch('/api/users/password', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ password: newPassword })
-      });
-      alert('Password updated successfully!');
-      setNewPassword('');
-      setConfirmPassword('');
-    } catch (error) {
-      console.error('Error updating password:', error);
-      alert('Failed to update password');
-    }
-  };
+  if (state.user?.role !== "ADMIN") {
+    return (
+      <div className="max-w-4xl mx-auto py-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Welcome, {state.user?.email || "User"}!</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <p className="text-gray-600">
+                We're glad to have you here. This is your personal dashboard where you can manage your profile and stay updated with notifications.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Quick Actions</CardTitle>
+                    <Settings className="h-4 w-4 text-gray-500" />
+                  </CardHeader>
+                  <CardContent>
+                    <ul className="space-y-2 text-sm text-gray-600">
+                      <li>• Update your profile information</li>
+                      <li>• Check your notifications</li>
+                      <li>• Manage your settings</li>
+                    </ul>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Recent Activity</CardTitle>
+                    <Bell className="h-4 w-4 text-gray-500" />
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-gray-600">
+                      Your recent activities and updates will appear here.
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
 
   return (
-    <ProtectedRoute>
-      <div className="container mx-auto p-6">
-        <h1 className="text-3xl font-bold mb-6">User Dashboard</h1>
-        
-        <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-          <TabsList>
-            <TabsTrigger value="profile">Profile</TabsTrigger>
-            <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="profile">
-            <Card className="p-6">
-              <h2 className="text-2xl font-semibold mb-4">Profile Information</h2>
-              <div className="space-y-4">
-                <div>
-                  <p className="font-medium">Name</p>
-                  <p className="text-gray-600">{user?.name}</p>
-                </div>
-                <div>
-                  <p className="font-medium">Email</p>
-                  <p className="text-gray-600">{user?.email}</p>
-                </div>
-                {address && (
-                  <div>
-                    <p className="font-medium">Address</p>
-                    <p className="text-gray-600">
-                      {address.street}, {address.city}, {address.state}, {address.country}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-8">
-                <h3 className="text-xl font-semibold mb-4">Change Password</h3>
-                <div className="space-y-4">
-                  <Input
-                    type="password"
-                    placeholder="New Password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                  />
-                  <Input
-                    type="password"
-                    placeholder="Confirm Password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                  />
-                  <Button onClick={updatePassword}>Update Password</Button>
-                </div>
-              </div>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="notifications">
-            <Card className="p-6">
-              <h2 className="text-2xl font-semibold mb-4">Notifications</h2>
-              <div className="grid gap-4">
-                {notifications.map((notification) => (
-                  <div key={notification.id} className="border p-4 rounded-lg">
-                    <p className="font-medium">{notification.message}</p>
-                    <p className="text-sm text-gray-500">
-                      {new Date(notification.createdAt).toLocaleString()}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          </TabsContent>
-        </Tabs>
+    <div className="max-w-7xl mx-auto py-8">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+            <Users className="h-4 w-4 text-gray-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalUsers}</div>
+            <p className="text-xs text-gray-500">
+              Active users in the system
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Addresses</CardTitle>
+            <MapPin className="h-4 w-4 text-gray-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalAddresses}</div>
+            <p className="text-xs text-gray-500">
+              Registered addresses
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Unread Notifications</CardTitle>
+            <Bell className="h-4 w-4 text-gray-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.unreadNotifications}</div>
+            <p className="text-xs text-gray-500">
+              Pending notifications
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">System Status</CardTitle>
+            <Settings className="h-4 w-4 text-gray-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-500">Active</div>
+            <p className="text-xs text-gray-500">
+              All systems operational
+            </p>
+          </CardContent>
+        </Card>
       </div>
-    </ProtectedRoute>
-  );
+    </div>
+  )
 } 

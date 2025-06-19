@@ -1,158 +1,168 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useAppContext } from "@/app/providers"
-import { Users, MapPin, Bell, UserCheck } from "lucide-react"
-import { apiService } from "@/lib/api"
-import { useToast } from "@/hooks/use-toast"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Users, MapPin, Bell, Settings } from "lucide-react"
+import { userService } from "../../src/services/user"
+import { notificationService } from "../../src/services/notifications"
+
+interface DashboardStats {
+  totalUsers: number
+  totalAddresses: number
+  unreadNotifications: number
+}
+
+interface Notification {
+  id: string
+  title: string
+  message: string
+  type: "info" | "success" | "warning" | "error"
+  createdAt: string
+  read: boolean
+}
 
 export default function DashboardPage() {
-  const { state, dispatch } = useAppContext()
-  const { toast } = useToast()
+  const { state } = useAppContext()
+  const [stats, setStats] = useState<DashboardStats>({
+    totalUsers: 0,
+    totalAddresses: 0,
+    unreadNotifications: 0
+  })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        // Fetch users
-        const users = await apiService.getUsers()
-        dispatch({ type: "SET_USERS", payload: users })
-
-        // Fetch addresses
-        const addresses = await apiService.getAddresses()
-        dispatch({ type: "SET_ADDRESSES", payload: addresses })
-
-        // Fetch notifications
-        const notifications = await apiService.getNotifications()
-        dispatch({ type: "SET_NOTIFICATIONS", payload: notifications })
-      } catch (error: any) {
-        toast({
-          title: "Error",
-          description: error.message || "Failed to fetch dashboard data",
-          variant: "destructive",
-        })
-      } finally {
-        setLoading(false)
-      }
+    if (state.user?.role === "ADMIN") {
+      fetchDashboardStats()
+    } else {
+      setLoading(false)
     }
+  }, [state.user])
 
-    fetchDashboardData()
-  }, [dispatch, toast])
+  const fetchDashboardStats = async () => {
+    try {
+      setLoading(true)
+      // Fetch users count
+      const users = await userService.getUsers()
+      
+      // Fetch notifications
+      const notifications = await notificationService.getNotifications()
+      const unreadCount = notifications.filter((n: Notification) => !n.read).length
 
-  const stats = [
-    {
-      title: "Total Users",
-      value: state.users.length,
-      icon: Users,
-      description: "Active users in the system",
-    },
-    {
-      title: "Addresses",
-      value: state.addresses.length,
-      icon: MapPin,
-      description: "Registered addresses",
-    },
-    {
-      title: "Notifications",
-      value: state.notifications.filter((n) => !n.read).length,
-      icon: Bell,
-      description: "Unread notifications",
-    },
-    {
-      title: "Admin Users",
-      value: state.users.filter((u) => u.role === "admin").length,
-      icon: UserCheck,
-      description: "Users with admin privileges",
-    },
-  ]
+      setStats({
+        totalUsers: users.length,
+        totalAddresses: 0, // TODO: Implement address service
+        unreadNotifications: unreadCount
+      })
+    } catch (error) {
+      console.error("Error fetching dashboard stats:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading dashboard data...</p>
-        </div>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <p className="text-gray-500">Loading dashboard...</p>
+      </div>
+    )
+  }
+
+  if (state.user?.role !== "ADMIN") {
+    return (
+      <div className="max-w-4xl mx-auto py-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Welcome, {state.user?.email || "User"}!</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <p className="text-gray-600">
+                We're glad to have you here. This is your personal dashboard where you can manage your profile and stay updated with notifications.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Quick Actions</CardTitle>
+                    <Settings className="h-4 w-4 text-gray-500" />
+                  </CardHeader>
+                  <CardContent>
+                    <ul className="space-y-2 text-sm text-gray-600">
+                      <li>• Update your profile information</li>
+                      <li>• Check your notifications</li>
+                      <li>• Manage your settings</li>
+                    </ul>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Recent Activity</CardTitle>
+                    <Bell className="h-4 w-4 text-gray-500" />
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-gray-600">
+                      Your recent activities and updates will appear here.
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600">Welcome back, {state.user?.firstName}!</p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat) => (
-          <Card key={stat.title}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-              <stat.icon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-              <CardDescription className="text-xs text-muted-foreground">{stat.description}</CardDescription>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="max-w-7xl mx-auto py-8">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
-          <CardHeader>
-            <CardTitle>Recent Users</CardTitle>
-            <CardDescription>Latest registered users</CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+            <Users className="h-4 w-4 text-gray-500" />
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {state.users.slice(0, 3).map((user) => (
-                <div key={user.id} className="flex items-center space-x-4">
-                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                    {user.firstName[0]}
-                    {user.lastName[0]}
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">
-                      {user.firstName} {user.lastName}
-                    </p>
-                    <p className="text-xs text-gray-500">{user.email}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <div className="text-2xl font-bold">{stats.totalUsers}</div>
+            <p className="text-xs text-gray-500">
+              Active users in the system
+            </p>
           </CardContent>
         </Card>
-
         <Card>
-          <CardHeader>
-            <CardTitle>Recent Notifications</CardTitle>
-            <CardDescription>Latest system notifications</CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Addresses</CardTitle>
+            <MapPin className="h-4 w-4 text-gray-500" />
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {state.notifications.slice(0, 3).map((notification) => (
-                <div key={notification.id} className="flex items-start space-x-4">
-                  <div
-                    className={`w-2 h-2 rounded-full mt-2 ${
-                      notification.type === "success"
-                        ? "bg-green-500"
-                        : notification.type === "error"
-                          ? "bg-red-500"
-                          : notification.type === "warning"
-                            ? "bg-yellow-500"
-                            : "bg-blue-500"
-                    }`}
-                  />
-                  <div>
-                    <p className="text-sm font-medium">{notification.title}</p>
-                    <p className="text-xs text-gray-500">{notification.message}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <div className="text-2xl font-bold">{stats.totalAddresses}</div>
+            <p className="text-xs text-gray-500">
+              Registered addresses
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Unread Notifications</CardTitle>
+            <Bell className="h-4 w-4 text-gray-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.unreadNotifications}</div>
+            <p className="text-xs text-gray-500">
+              Pending notifications
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">System Status</CardTitle>
+            <Settings className="h-4 w-4 text-gray-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-500">Active</div>
+            <p className="text-xs text-gray-500">
+              All systems operational
+            </p>
           </CardContent>
         </Card>
       </div>

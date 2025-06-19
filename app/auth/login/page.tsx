@@ -12,7 +12,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useAppContext } from "@/app/providers"
 import { useToast } from "@/hooks/use-toast"
-import { apiService } from "@/lib/api"
+import { login as apiLogin } from "@/src/services/auth"
+import { handleLoginResponse } from "@/src/utils/auth"
 import Cookies from 'js-cookie'
 
 export default function LoginPage() {
@@ -27,40 +28,40 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log('🔑 Login form submitted');
     setLoading(true)
     setError("")
 
     try {
-      const response = await apiService.login(email, password)
-      console.log('Login response:', response) // Debug log
+      console.log('📡 Sending login request to API...');
+      const response = await apiLogin({ email, password })
+      console.log('✅ Login response received:', response)
       
-      // Store token in cookie
-      Cookies.set('token', response.accessToken, { expires: 7 }) // Expires in 7 days
-      
-      // Store user data in localStorage
-      const userData = {
-        id: response.userId,
-        email: response.email,
-        role: response.role
-      }
-      localStorage.setItem('user', JSON.stringify(userData))
+      // Handle login response and store data
+      console.log('🔄 Processing login response...');
+      const userData = handleLoginResponse(response);
+      console.log('✅ Login response processed successfully');
 
       // Update app context
+      console.log('🔄 Updating application context...');
       dispatch({ 
         type: "SET_USER", 
         payload: userData
       })
+      console.log('✅ Application context updated');
 
       toast({
         title: "Login successful",
         description: "Welcome back!",
       })
 
+      console.log('🚀 Redirecting to dashboard...');
       router.push("/dashboard")
     } catch (err: any) {
-      console.error('Login error:', err) // Debug log
+      console.error('❌ Login error:', err)
       setError(err.message || "Invalid email or password")
     } finally {
+      console.log('🏁 Login process completed');
       setLoading(false)
     }
   }

@@ -28,21 +28,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const checkAuth = async () => {
+      console.log('🔍 Starting authentication check...');
       try {
         if (isAuthenticated()) {
+          console.log('✅ User is authenticated, fetching user data...');
           const userData = getUser();
           if (userData) {
-            console.log('User authenticated:', userData);
+            console.log('👤 User data retrieved successfully:', userData);
             setUserState(userData);
           } else {
-            console.warn('No user data found despite valid token');
+            console.warn('⚠️ No user data found despite valid token');
             removeUser();
           }
+        } else {
+          console.log('❌ User is not authenticated');
         }
       } catch (error) {
-        console.error('Auth check failed:', error);
+        console.error('❌ Auth check failed:', error);
         setError('Authentication check failed');
       } finally {
+        console.log('🏁 Authentication check completed');
         setLoading(false);
       }
     };
@@ -50,34 +55,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string) => {
+    console.log('🔑 Login attempt for user:', email);
     try {
       setError(null);
       setLoading(true);
+      console.log('📡 Sending login request to API...');
       const response = await apiLogin({ email, password });
-      console.log('Login successful:', response);
+      console.log('✅ Login successful:', response);
       setUserState(response);
     } catch (error) {
-      console.error('Login failed:', error);
+      console.error('❌ Login failed:', error);
       setError(error instanceof Error ? error.message : 'Login failed');
       throw error;
     } finally {
+      console.log('🏁 Login process completed');
       setLoading(false);
     }
   };
 
   const logout = async () => {
+    console.log('🚪 Starting logout process...');
     try {
       setError(null);
       setLoading(true);
+      console.log('📡 Sending logout request to API...');
       await apiLogout();
       removeUser();
       setUserState(null);
-      console.log('Logout successful');
+      console.log('✅ Logout successful');
     } catch (error) {
-      console.error('Logout failed:', error);
+      console.error('❌ Logout failed:', error);
       setError(error instanceof Error ? error.message : 'Logout failed');
       throw error;
     } finally {
+      console.log('🏁 Logout process completed');
       setLoading(false);
     }
   };

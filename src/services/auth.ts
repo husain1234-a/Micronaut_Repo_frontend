@@ -1,5 +1,5 @@
-import { api } from '@/utils/api';
-import { handleLoginResponse } from '@/utils/auth';
+import { api } from '../utils/api';
+import { handleLoginResponse } from '../utils/auth';
 
 interface LoginCredentials {
   email: string;
@@ -17,20 +17,35 @@ interface LoginResponse {
 }
 
 export const login = async (credentials: LoginCredentials) => {
-  console.log('Login Request:', credentials); // Debug log
-  
-  const response = await api<LoginResponse>('/auth/login', {
-    method: 'POST',
-    body: JSON.stringify(credentials),
-    requiresAuth: false
-  });
-  
-  console.log('Login Response from API:', response); // Debug log
-  return handleLoginResponse(response);
+  console.log('🔑 Attempting login with credentials:', { email: credentials.email });
+  try {
+    const response = await api('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(credentials),
+      requiresAuth: false
+    });
+    
+    // Debug log to see exact response structure
+    console.log('🔍 Raw API Response:', JSON.stringify(response, null, 2));
+    console.log('🔍 Response type:', typeof response);
+    console.log('🔍 Response keys:', Object.keys(response));
+    
+    return response;
+  } catch (error) {
+    console.error('❌ Login API error:', error);
+    throw error;
+  }
 };
 
 export const logout = async () => {
-  await api('/auth/logout', {
-    method: 'POST'
-  });
+  console.log('🚪 Attempting logout...');
+  try {
+    await api('/auth/logout', {
+      method: 'POST'
+    });
+    console.log('✅ Logout successful');
+  } catch (error) {
+    console.error('❌ Logout API error:', error);
+    throw error;
+  }
 }; 

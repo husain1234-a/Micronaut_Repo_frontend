@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { useAppContext } from "@/app/providers"
-import { Users, MapPin, Bell, Settings, LogOut } from "lucide-react"
+import { Users, MapPin, Bell, Settings, LogOut, Home } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import Cookies from 'js-cookie'
 
@@ -14,30 +14,52 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { toast } = useToast()
 
   const handleLogout = () => {
+    console.log('🚪 Starting logout process...');
+    
     // Clear cookies and localStorage
+    console.log('🗑️ Clearing cookies and localStorage...');
     Cookies.remove('token')
     localStorage.removeItem('user')
+    console.log('✅ Cookies and localStorage cleared');
     
     // Clear app context
+    console.log('🔄 Clearing application context...');
     dispatch({ type: "SET_USER", payload: null })
+    console.log('✅ Application context cleared');
     
     // Show success message
+    console.log('💬 Showing logout success message...');
     toast({
       title: "Logged out successfully",
       description: "You have been logged out of your account",
     })
     
     // Redirect to login page
+    console.log('🚀 Redirecting to login page...');
     router.push("/auth/login")
+    console.log('✅ Logout process completed');
   }
 
-  const navigation = [
-    { name: "Dashboard", href: "/dashboard", icon: Users },
-    { name: "Users", href: "/dashboard/users", icon: Users },
-    { name: "Addresses", href: "/dashboard/addresses", icon: MapPin },
-    { name: "Notifications", href: "/dashboard/notifications", icon: Bell },
-    { name: "Settings", href: "/dashboard/settings", icon: Settings },
-  ]
+  // Get user's full name
+  const userFullName = state.user?.firstName && state.user?.lastName 
+    ? `${state.user.firstName} ${state.user.lastName}`
+    : state.user?.email || 'User';
+
+  // Define navigation items based on user role
+  const navigation = state.user?.role === 'ADMIN' 
+    ? [
+        { name: "Dashboard", href: "/dashboard", icon: Home },
+        { name: "Users", href: "/dashboard/users", icon: Users },
+        { name: "Addresses", href: "/dashboard/addresses", icon: MapPin },
+        { name: "Notifications", href: "/dashboard/notifications", icon: Bell },
+        { name: "Settings", href: "/dashboard/settings", icon: Settings },
+      ]
+    : [
+        { name: "Dashboard", href: "/dashboard", icon: Home },
+        { name: "My Profile", href: "/dashboard/profile", icon: Users },
+        { name: "My Notifications", href: "/dashboard/notifications", icon: Bell },
+        { name: "Settings", href: "/dashboard/settings", icon: Settings },
+      ];
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -46,9 +68,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="flex justify-between h-16">
             <div className="flex">
               <div className="flex-shrink-0 flex items-center">
-                <Link href="/dashboard" className="text-xl font-bold text-gray-900">
-                  User Management
-                </Link>
+                <h1 className="text-xl font-bold">User Management</h1>
               </div>
               <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
                 {navigation.map((item) => (
@@ -57,22 +77,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     href={item.href}
                     className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900"
                   >
-                    <item.icon className="h-4 w-4 mr-2" />
+                    <item.icon className="h-5 w-5 mr-2" />
                     {item.name}
                   </Link>
                 ))}
               </div>
             </div>
             <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <span className="text-sm text-gray-700 mr-4">
-                  Welcome, {state.user?.email}
-                </span>
-                <Button variant="outline" onClick={handleLogout}>
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Logout
-                </Button>
-              </div>
+              <span className="text-sm font-medium text-gray-700 mr-4">
+                Welcome, {userFullName}
+              </span>
+              <Button
+                variant="ghost"
+                onClick={handleLogout}
+                className="text-gray-700 hover:text-gray-900"
+              >
+                <LogOut className="h-5 w-5 mr-2" />
+                Logout
+              </Button>
             </div>
           </div>
         </div>
