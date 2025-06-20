@@ -30,4 +30,6 @@ public interface NotificationService {
     void sendPasswordChangeRejectionNotification(UUID userId, String email);
 
     void broadcastNotification(String title, String message, NotificationPriority priority);
+
+    void sendAccountDeletionNotification(UUID userId, String email);
 }

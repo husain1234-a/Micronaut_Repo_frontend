@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog"
 import { useAppContext } from "@/app/providers"
 import { useToast } from "@/hooks/use-toast"
+import { userService } from "../../src/services/user"
 
 interface DeleteUserDialogProps {
   open: boolean
@@ -30,16 +31,13 @@ export function DeleteUserDialog({ open, onOpenChange, user }: DeleteUserDialogP
     setLoading(true)
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
+      // Call backend API to delete user
+      await userService.deleteUser(user.id)
       dispatch({ type: "DELETE_USER", payload: user.id })
-
       toast({
         title: "User deleted",
         description: "The user has been successfully deleted.",
       })
-
       onOpenChange(false)
     } catch (error) {
       toast({

@@ -1,9 +1,17 @@
 package com.yash.usermanagement.model;
 
 import io.micronaut.serde.annotation.Serdeable;
-import io.micronaut.data.annotation.*;
+import io.micronaut.data.annotation.MappedEntity;
+import io.micronaut.data.annotation.MappedProperty;
+import io.micronaut.data.annotation.Id;
+import io.micronaut.data.annotation.AutoPopulated;
+import io.micronaut.data.annotation.Relation;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -56,11 +64,8 @@ public class User {
     @MappedProperty("role")
     private UserRole role;
 
-    @Valid
-    @MappedProperty("address_id")
-    private UUID addressId;
-
     @Relation(value = Relation.Kind.ONE_TO_ONE)
+    @MappedProperty("address_id")
     private Address address;
 
     // Getters and Setters
@@ -136,22 +141,11 @@ public class User {
         this.role = role;
     }
 
-    public UUID getAddressId() {
-        return addressId;
-    }
-
-    public void setAddressId(UUID addressId) {
-        this.addressId = addressId;
-    }
-
     public Address getAddress() {
         return address;
     }
 
     public void setAddress(Address address) {
         this.address = address;
-        if (address != null) {
-            this.addressId = address.getId();
-        }
     }
 }

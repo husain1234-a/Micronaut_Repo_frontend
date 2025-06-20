@@ -54,7 +54,6 @@ public class UserServiceImpl implements UserService {
             if (user.getAddress() != null) {
                 Address address = user.getAddress();
                 Address savedAddress = addressRepository.save(address);
-                user.setAddressId(savedAddress.getId());
                 user.setAddress(savedAddress);
             }
 
@@ -102,17 +101,15 @@ public class UserServiceImpl implements UserService {
             // Update address if present
             if (userDetails.getAddress() != null) {
                 Address address = userDetails.getAddress();
-                if (existingUser.getAddressId() != null) {
+                if (existingUser.getAddress() != null && existingUser.getAddress().getId() != null) {
                     // Update existing address
-                    address.setId(existingUser.getAddressId());
+                    address.setId(existingUser.getAddress().getId());
                     Address updatedAddress = addressRepository.update(address);
                     existingUser.setAddress(updatedAddress);
-                    existingUser.setAddressId(updatedAddress.getId());
                 } else {
                     // Create new address
                     Address savedAddress = addressRepository.save(address);
                     existingUser.setAddress(savedAddress);
-                    existingUser.setAddressId(savedAddress.getId());
                 }
             }
 
@@ -120,10 +117,6 @@ public class UserServiceImpl implements UserService {
             existingUser.setFirstName(userDetails.getFirstName());
             existingUser.setLastName(userDetails.getLastName());
             existingUser.setEmail(userDetails.getEmail());
-            // Only update password if provided, otherwise preserve existing password
-            if (userDetails.getPassword() != null && !userDetails.getPassword().trim().isEmpty()) {
-                existingUser.setPassword(userDetails.getPassword());
-            }
             existingUser.setGender(userDetails.getGender());
             existingUser.setDateOfBirth(userDetails.getDateOfBirth());
             existingUser.setPhoneNumber(userDetails.getPhoneNumber());
@@ -148,8 +141,8 @@ public class UserServiceImpl implements UserService {
             User user = getUserById(id);
 
             // Delete address if exists
-            if (user.getAddressId() != null) {
-                addressRepository.deleteById(user.getAddressId());
+            if (user.getAddress() != null && user.getAddress().getId() != null) {
+                addressRepository.deleteById(user.getAddress().getId());
             }
 
             userRepository.deleteById(id);

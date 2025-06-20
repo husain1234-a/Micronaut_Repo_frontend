@@ -326,4 +326,38 @@ public class NotificationServiceImpl implements NotificationService {
             throw new RuntimeException("Failed to send password change rejection notification", e);
         }
     }
+
+    @Override
+    public void sendAccountDeletionNotification(UUID userId, String email) {
+        log.info("Sending account deletion notification for user: {}", userId);
+        try {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+            Notification notification = new Notification();
+            notification.setUserId(userId);
+            notification.setTitle("Account Scheduled for Deletion");
+            notification.setMessage("Your account has been scheduled for deletion. If this was not you, please contact support immediately.");
+            notification.setPriority(NotificationPriority.HIGH);
+            notification.setRead(false);
+            notification.setCreatedAt(java.time.LocalDateTime.now());
+            notificationRepository.save(notification);
+
+            String subject = "Account Scheduled for Deletion";
+            String textContent = "Your account has been scheduled for deletion. If this was not you, please contact support immediately.";
+            String htmlContent = "<h3>Account Scheduled for Deletion</h3><br>" +
+                    "<p>Your account has been scheduled for deletion. If this was not you, please contact support immediately.</p>";
+
+            sendGridEmailService.sendEmail(
+                    user.getEmail(),
+                    subject,
+                    textContent,
+                    htmlContent);
+
+            log.info("Account deletion email sent successfully to: {}", user.getEmail());
+        } catch (Exception e) {
+            log.error("Error in sendAccountDeletionNotification for user: {}", userId, e);
+            throw new RuntimeException("Failed to send account deletion notification", e);
+        }
+    }
 }
