@@ -21,8 +21,8 @@ export const notificationService = {
 
   async markAsRead(notificationId: string) {
     try {
-      return await api<Notification>(`/notifications/${notificationId}/read`, {
-        method: "PUT"
+      return await api<void>(`/notifications/${notificationId}/read`, {
+        method: "PATCH"
       })
     } catch (error) {
       console.error(`Error marking notification ${notificationId} as read:`, error)

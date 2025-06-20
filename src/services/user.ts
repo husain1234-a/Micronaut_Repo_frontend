@@ -1,14 +1,25 @@
 import { api } from "../utils/api"
 
+interface Address {
+  streetAddress: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+  addressType: string;
+  defaultAddress: boolean;
+}
+
 interface User {
   id: string;
   email: string;
   role: string;
-  firstname?: string;
-  lastname?: string;
   firstName: string;
   lastName: string;
   phoneNumber: string;
+  dateOfBirth?: string;
+  gender?: string;
+  address?: Address;
 }
 
 export const userService = {
@@ -187,11 +198,11 @@ export const userService = {
       return response;
     } catch (error) {
       console.error("=== USER UPDATE ERROR ===");
-      console.error("Error updating user:", error);
+      console.error("Error updating user:", error as any);
       if (typeof error === 'object' && error !== null && 'response' in error) {
         try {
           // @ts-ignore
-          const errorText = await error.response.text();
+          const errorText = await (error as any).response.text();
           console.error("Raw error response text:", errorText);
         } catch (parseErr) {
           console.error("Could not parse error response text:", parseErr);
@@ -224,6 +235,18 @@ export const userService = {
       })
     } catch (error) {
       console.error("Error approving/rejecting password change request:", error as any)
+      throw error
+    }
+  },
+
+  async requestPasswordChange(userId: string, oldPassword: string, newPassword: string) {
+    try {
+      return await api<void>(`/users/${userId}/change-password`, {
+        method: "POST",
+        body: JSON.stringify({ oldPassword, newPassword })
+      })
+    } catch (error) {
+      console.error("Error requesting password change:", error as any)
       throw error
     }
   }

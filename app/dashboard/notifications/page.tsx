@@ -27,14 +27,22 @@ export default function NotificationsPage() {
   useEffect(() => {
     if (state.user?.id) {
       fetchNotifications()
+      const interval = setInterval(fetchNotifications, 10000)
+      return () => clearInterval(interval)
     }
   }, [state.user])
+
+  const sortNotifications = (notifications: Notification[]) => {
+    const unread = notifications.filter(n => !n.read).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    const read = notifications.filter(n => n.read).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    return [...unread, ...read]
+  }
 
   const fetchNotifications = async () => {
     try {
       setLoading(true)
       const data = await notificationService.getNotifications(state.user.id)
-      setNotifications(data)
+      setNotifications(sortNotifications(data))
     } catch (error) {
       toast({
         title: "Error",
@@ -49,11 +57,7 @@ export default function NotificationsPage() {
   const handleMarkAsRead = async (notificationId: string) => {
     try {
       await notificationService.markAsRead(notificationId)
-      setNotifications(prev =>
-        prev.map(n =>
-          n.id === notificationId ? { ...n, read: true } : n
-        )
-      )
+      setNotifications(prev => sortNotifications(prev.map(n => n.id === notificationId ? { ...n, read: true } : n)))
       toast({
         title: "Success",
         description: "Notification marked as read"

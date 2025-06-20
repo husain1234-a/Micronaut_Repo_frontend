@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { createContext, useContext, useReducer, type ReactNode, useEffect } from "react"
+import { notificationService } from "../src/services/notifications"
 
 // Types
 interface User {
@@ -154,6 +155,28 @@ export function Providers({ children }: { children: ReactNode }) {
       localStorage.removeItem('user')
     }
   }, [state.user])
+
+  // Poll notifications for real-time updates
+  useEffect(() => {
+    let interval: NodeJS.Timeout | undefined
+    const fetchNotifications = async () => {
+      if (state.user?.id) {
+        try {
+          const notifications = await notificationService.getNotifications(state.user.id)
+          dispatch({ type: "SET_NOTIFICATIONS", payload: notifications })
+        } catch (e) {
+          // ignore
+        }
+      }
+    }
+    if (state.user?.id) {
+      fetchNotifications()
+      interval = setInterval(fetchNotifications, 10000)
+    }
+    return () => {
+      if (interval) clearInterval(interval)
+    }
+  }, [state.user?.id])
 
   return <AppContext.Provider value={{ state, dispatch }}>{children}</AppContext.Provider>
 }

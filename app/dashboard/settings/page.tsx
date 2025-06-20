@@ -8,6 +8,8 @@ import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
 import { useAppContext } from "@/app/providers"
 import { useToast } from "@/hooks/use-toast"
+import { userService } from "../../../src/services/user"
+import { useState } from "react"
 
 export default function SettingsPage() {
   const { state } = useAppContext()
@@ -25,6 +27,42 @@ export default function SettingsPage() {
       title: "Notification preferences updated",
       description: "Your notification preferences have been saved.",
     })
+  }
+
+  // Change password state
+  const [currentPassword, setCurrentPassword] = useState("")
+  const [newPassword, setNewPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [pwLoading, setPwLoading] = useState(false)
+
+  const handleChangePassword = async () => {
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      toast({ title: "Error", description: "All password fields are required.", variant: "destructive" })
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      toast({ title: "Error", description: "New passwords do not match.", variant: "destructive" })
+      return
+    }
+    setPwLoading(true)
+    try {
+      await userService.requestPasswordChange(state.user.id, currentPassword, newPassword)
+      toast({
+        title: "Password Change Requested",
+        description: "Your password change request has been sent for admin approval.",
+      })
+      setCurrentPassword("")
+      setNewPassword("")
+      setConfirmPassword("")
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error?.message || "Failed to request password change.",
+        variant: "destructive"
+      })
+    } finally {
+      setPwLoading(false)
+    }
   }
 
   return (
@@ -63,7 +101,7 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        {/* <Card>
           <CardHeader>
             <CardTitle>Notification Preferences</CardTitle>
             <CardDescription>Choose what notifications you want to receive</CardDescription>
@@ -94,7 +132,7 @@ export default function SettingsPage() {
             </div>
             <Button onClick={handleSaveNotifications}>Save Preferences</Button>
           </CardContent>
-        </Card>
+        </Card> */}
 
         <Card>
           <CardHeader>
@@ -104,17 +142,18 @@ export default function SettingsPage() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="currentPassword">Current Password</Label>
-              <Input id="currentPassword" type="password" placeholder="Enter current password" />
+              <Input id="currentPassword" type="password" placeholder="Enter current password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} disabled={pwLoading} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="newPassword">New Password</Label>
-              <Input id="newPassword" type="password" placeholder="Enter new password" />
+              <Input id="newPassword" type="password" placeholder="Enter new password" value={newPassword} onChange={e => setNewPassword(e.target.value)} disabled={pwLoading} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Confirm New Password</Label>
-              <Input id="confirmPassword" type="password" placeholder="Confirm new password" />
+              <Input id="confirmPassword" type="password" placeholder="Confirm new password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} disabled={pwLoading} />
             </div>
-            <Button>Change Password</Button>
+            <Button onClick={handleChangePassword} disabled={pwLoading}>{pwLoading ? "Requesting..." : "Change Password"}</Button>
+            <div className="text-xs text-gray-500 mt-2">Password change requests require admin approval.</div>
           </CardContent>
         </Card>
 
