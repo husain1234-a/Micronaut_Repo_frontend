@@ -7,6 +7,7 @@ import { useAppContext } from "@/app/providers"
 import { Users, MapPin, Bell, Settings, LogOut, Home } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import Cookies from 'js-cookie'
+import { cn } from "@/lib/utils"
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { state, dispatch } = useAppContext()
@@ -50,9 +51,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     ? [
         { name: "Dashboard", href: "/dashboard", icon: Home },
         { name: "Users", href: "/dashboard/users", icon: Users },
-        { name: "Addresses", href: "/dashboard/addresses", icon: MapPin },
+        // { name: "Addresses", href: "/dashboard/addresses", icon: MapPin },
         { name: "Notifications", href: "/dashboard/notifications", icon: Bell },
         { name: "Settings", href: "/dashboard/settings", icon: Settings },
+        { name: "Password Requests", href: "/dashboard/password-requests", icon: Users },
       ]
     : [
         { name: "Dashboard", href: "/dashboard", icon: Home },
@@ -75,7 +77,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <Link
                     key={item.name}
                     href={item.href}
-                    className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900"
+                    className={cn(
+                      item.href === "/dashboard" && "text-primary font-semibold"
+                    )}
                   >
                     <item.icon className="h-5 w-5 mr-2" />
                     {item.name}

@@ -25,13 +25,15 @@ export default function NotificationsPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchNotifications()
-  }, [])
+    if (state.user?.id) {
+      fetchNotifications()
+    }
+  }, [state.user])
 
   const fetchNotifications = async () => {
     try {
       setLoading(true)
-      const data = await notificationService.getNotifications()
+      const data = await notificationService.getNotifications(state.user.id)
       setNotifications(data)
     } catch (error) {
       toast({

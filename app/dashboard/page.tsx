@@ -45,9 +45,12 @@ export default function DashboardPage() {
       // Fetch users count
       const users = await userService.getUsers()
 
-        // Fetch notifications
-      const notifications = await notificationService.getNotifications()
-      const unreadCount = notifications.filter((n: Notification) => !n.read).length
+      // Fetch notifications
+      let unreadCount = 0;
+      if (state.user && state.user.id) {
+        const notifications = await notificationService.getNotifications(state.user.id)
+        unreadCount = notifications.filter((n: Notification) => !n.read).length
+      }
 
       setStats({
         totalUsers: users.length,
@@ -56,10 +59,10 @@ export default function DashboardPage() {
       })
     } catch (error) {
       console.error("Error fetching dashboard stats:", error)
-      } finally {
-        setLoading(false)
-      }
+    } finally {
+      setLoading(false)
     }
+  }
 
   if (loading) {
     return (
@@ -129,7 +132,7 @@ export default function DashboardPage() {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        {/* <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Addresses</CardTitle>
             <MapPin className="h-4 w-4 text-gray-500" />
@@ -140,7 +143,7 @@ export default function DashboardPage() {
               Registered addresses
             </p>
           </CardContent>
-        </Card>
+        </Card> */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Unread Notifications</CardTitle>
@@ -153,7 +156,7 @@ export default function DashboardPage() {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        {/* <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">System Status</CardTitle>
             <Settings className="h-4 w-4 text-gray-500" />
@@ -164,7 +167,7 @@ export default function DashboardPage() {
               All systems operational
             </p>
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
     </div>
   )

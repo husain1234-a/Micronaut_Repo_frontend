@@ -10,9 +10,9 @@ interface Notification {
 }
 
 export const notificationService = {
-  async getNotifications() {
+  async getNotifications(userId: string) {
     try {
-      return await api<Notification[]>("/notifications")
+      return await api<Notification[]>(`/notifications/user/${userId}`)
     } catch (error) {
       console.error("Error fetching notifications:", error)
       throw error

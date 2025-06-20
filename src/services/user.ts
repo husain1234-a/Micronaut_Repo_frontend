@@ -205,5 +205,26 @@ export const userService = {
       console.error("=== END USER UPDATE ERROR ===");
       throw error;
     }
+  },
+
+  async getPendingPasswordChangeRequests() {
+    try {
+      return await api<any[]>("/users/password-change-requests/pending")
+    } catch (error) {
+      console.error("Error fetching pending password change requests:", error as any)
+      throw error
+    }
+  },
+
+  async approveOrRejectPasswordChangeRequest(requestId: string, adminId: string, approved: boolean) {
+    try {
+      return await api(`/users/password-change-requests/${requestId}/approve`, {
+        method: "PUT",
+        body: JSON.stringify({ adminId, approved })
+      })
+    } catch (error) {
+      console.error("Error approving/rejecting password change request:", error as any)
+      throw error
+    }
   }
 } 
