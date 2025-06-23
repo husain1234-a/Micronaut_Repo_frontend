@@ -10,10 +10,14 @@ import { useAppContext } from "@/app/providers"
 import { useToast } from "@/hooks/use-toast"
 import { userService } from "../../../src/services/user"
 import { useState } from "react"
+import { DeleteUserDialog } from '@/components/users/delete-user-dialog'
+import { useRouter } from 'next/navigation'
 
 export default function SettingsPage() {
-  const { state } = useAppContext()
+  const { state, dispatch } = useAppContext()
   const { toast } = useToast()
+  const router = useRouter()
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
   const handleSaveProfile = () => {
     toast({
@@ -97,7 +101,7 @@ export default function SettingsPage() {
               <Label htmlFor="role">Role</Label>
               <Input id="role" defaultValue={state.user?.role} disabled />
             </div>
-            <Button onClick={handleSaveProfile}>Save Profile</Button>
+            {/* <Button onClick={handleSaveProfile}>Save Profile</Button> */}
           </CardContent>
         </Card>
 
@@ -168,8 +172,20 @@ export default function SettingsPage() {
                 <h3 className="font-medium text-red-900">Delete Account</h3>
                 <p className="text-sm text-red-700">Permanently delete your account and all associated data</p>
               </div>
-              <Button variant="destructive">Delete Account</Button>
+              <Button variant="destructive" onClick={() => setDeleteDialogOpen(true)}>Delete Account</Button>
             </div>
+            <DeleteUserDialog
+              open={deleteDialogOpen}
+              onOpenChange={async (open) => {
+                setDeleteDialogOpen(open)
+                if (!open && !state.user) {
+                  // User deleted, logout and redirect to login
+                  dispatch({ type: 'SET_USER', payload: null })
+                  router.push('/login')
+                }
+              }}
+              user={state.user}
+            />
           </CardContent>
         </Card>
       </div>

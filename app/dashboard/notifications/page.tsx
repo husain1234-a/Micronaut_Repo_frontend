@@ -8,6 +8,7 @@ import { Bell, Check, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
 import { notificationService } from "../../../src/services/notifications"
+import { BroadcastNotificationDialog } from '../../../components/notifications/broadcast-notification-dialog'
 
 interface Notification {
   id: string
@@ -23,6 +24,7 @@ export default function NotificationsPage() {
   const { toast } = useToast()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(true)
+  const [broadcastOpen, setBroadcastOpen] = useState(false)
 
   useEffect(() => {
     if (state.user?.id) {
@@ -107,6 +109,17 @@ export default function NotificationsPage() {
 
   return (
     <div className="max-w-4xl mx-auto py-8">
+      {state.user?.role === 'ADMIN' && (
+        <div className="flex justify-end mb-4">
+          <Button
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded shadow"
+            onClick={() => setBroadcastOpen(true)}
+          >
+            Send Broadcast
+          </Button>
+          <BroadcastNotificationDialog open={broadcastOpen} onOpenChange={setBroadcastOpen} />
+        </div>
+      )}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
