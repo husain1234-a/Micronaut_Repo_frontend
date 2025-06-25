@@ -3,6 +3,7 @@
 import type React from "react"
 import { createContext, useContext, useReducer, type ReactNode, useEffect } from "react"
 import { notificationService } from "../src/services/notifications"
+import { useFcmRegistration } from '../hooks/use-fcm'
 
 // Types
 interface User {
@@ -177,6 +178,9 @@ export function Providers({ children }: { children: ReactNode }) {
       if (interval) clearInterval(interval)
     }
   }, [state.user?.id])
+
+  // Register FCM token for authenticated users
+  useFcmRegistration({ isAuthenticated: state.isAuthenticated });
 
   return <AppContext.Provider value={{ state, dispatch }}>{children}</AppContext.Provider>
 }

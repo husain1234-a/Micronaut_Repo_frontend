@@ -6,6 +6,7 @@ import { Input } from '../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { toast } from '../../hooks/use-toast';
 import { api } from '../../src/utils/api';
+import { RadioGroup } from '../ui/radio-group';
 
 interface BroadcastNotificationDialogProps {
   open: boolean;
@@ -24,6 +25,7 @@ export const BroadcastNotificationDialog: React.FC<BroadcastNotificationDialogPr
   const [message, setMessage] = useState('');
   const [priority, setPriority] = useState('MEDIUM');
   const [loading, setLoading] = useState(false);
+  const [notificationType, setNotificationType] = useState<'email' | 'push'>('push');
 
   // Extract title from first line of message
   const extractedTitle = useMemo(() => {
@@ -56,8 +58,9 @@ export const BroadcastNotificationDialog: React.FC<BroadcastNotificationDialogPr
         method: 'POST',
         body: JSON.stringify({
           title: extractedTitle,
-          message: message.substring(extractedTitle.length).trim(), // Remove title from message
+          message: message.substring(extractedTitle.length).trim(),
           priority,
+          channel: notificationType,
         }),
         requiresAuth: true,
       });
@@ -65,6 +68,7 @@ export const BroadcastNotificationDialog: React.FC<BroadcastNotificationDialogPr
       setStep('prompt');
       setPrompt('');
       setMessage('');
+      setNotificationType('push');
       onOpenChange(false);
     } catch (err: any) {
       toast({ title: 'Broadcast Failed', description: err.message || 'Something went wrong.' });
@@ -129,11 +133,38 @@ export const BroadcastNotificationDialog: React.FC<BroadcastNotificationDialogPr
                 </SelectContent>
               </Select>
             </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Notification Type</label>
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="notificationType"
+                    value="push"
+                    checked={notificationType === 'push'}
+                    onChange={() => setNotificationType('push')}
+                    disabled={loading}
+                  />
+                  Push Notification
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="notificationType"
+                    value="email"
+                    checked={notificationType === 'email'}
+                    onChange={() => setNotificationType('email')}
+                    disabled={loading}
+                  />
+                  Email
+                </label>
+              </div>
+            </div>
             <DialogFooter>
               <Button onClick={handleBroadcast} disabled={!message || loading}>
                 Broadcast
               </Button>
-              <Button variant="outline" onClick={() => { setStep('prompt'); setPrompt(''); setMessage(''); }} disabled={loading}>
+              <Button variant="outline" onClick={() => { setStep('prompt'); setPrompt(''); setMessage(''); setNotificationType('push'); }} disabled={loading}>
                 Back
               </Button>
             </DialogFooter>

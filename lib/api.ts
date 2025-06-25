@@ -142,3 +142,17 @@ class ApiService {
 }
 
 export const apiService = new ApiService()
+
+export async function api(url: string, options: RequestInit & { requiresAuth?: boolean } = {}) {
+  const headers = options.headers || {};
+  if (options.requiresAuth) {
+    // Example: get token from localStorage or cookies
+    const token = localStorage.getItem('token');
+    if (token) {
+      (headers as any)['Authorization'] = `Bearer ${token}`;
+    }
+  }
+  const res = await fetch(url, { ...options, headers });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json ? res.json() : res;
+}
