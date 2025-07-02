@@ -8,11 +8,21 @@ interface Notification {
   createdAt: string
   read: boolean
 }
-
+interface PaginatedResponse<T> {
+  content: T[]
+  totalPages: number
+  totalElements: number
+  size: number
+  number: number
+  // ...other fields if needed
+}
 export const notificationService = {
-  async getNotifications(userId: string) {
+  async getNotifications(userId: string, page = 0, size = 2) {
     try {
-      return await api<Notification[]>(`/notifications/user/${userId}`)
+      // Add pagination params
+      return await api<PaginatedResponse<Notification>>(
+        `/notifications/user/${userId}?page=${page}&size=${size}`
+      )
     } catch (error) {
       console.error("Error fetching notifications:", error)
       throw error

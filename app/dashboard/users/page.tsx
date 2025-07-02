@@ -1,5 +1,5 @@
 "use client"
- 
+
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,7 +10,7 @@ import { UserDialog } from "@/components/users/user-dialog"
 import { DeleteUserDialog } from "@/components/users/delete-user-dialog"
 import { Plus, Search, Edit, Trash2 } from "lucide-react"
 import { userService } from "../../../src/services/user"
- 
+
 type UserType = {
   id: string
   email: string
@@ -21,44 +21,46 @@ type UserType = {
   lastname?: string
   [key: string]: any
 }
- 
+interface PaginatedResponse<T> {
+  content: T[]
+  totalPages: number
+  totalElements: number
+  size: number
+  number: number
+}
+
 export default function UsersPage() {
-  const { state, dispatch } = useAppContext()
+  const { state } = useAppContext()
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedUser, setSelectedUser] = useState<any>(null)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
- 
+  // Pagination state
+  const [page, setPage] = useState(0) // 0-based for backend
+  const [size, setSize] = useState(3) // page size
+  const [usersPage, setUsersPage] = useState<PaginatedResponse<UserType> | null>(null)
+
   useEffect(() => {
-    async function fetchUsers() {
-      try {
-        const users = await userService.getUsers()
-        dispatch({ type: "SET_USERS", payload: users })
-      } catch (error) {
-        // Optionally handle error
-      }
-    }
-    fetchUsers()
-  }, [dispatch])
- 
-  const filteredUsers = (state.users as UserType[]).filter(
+    userService.getUsers(page, size).then(res => setUsersPage(res))
+  }, [page, size])
+
+  const filteredUsers = (usersPage?.content ?? []).filter(
     (user) =>
       (user.firstName || user.firstname || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (user.lastName || user.lastname || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()),
+      (user.lastName || user.lastname || "").toLowerCase().includes(searchTerm.toLowerCase())
   )
- 
+
   const handleEditUser = (user: any) => {
     setSelectedUser(user)
     setIsEditDialogOpen(true)
   }
- 
+
   const handleDeleteUser = (user: any) => {
     setSelectedUser(user)
     setIsDeleteDialogOpen(true)
   }
- 
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -71,7 +73,7 @@ export default function UsersPage() {
           Add User
         </Button>
       </div>
- 
+
       <Card>
         <CardHeader>
           <CardTitle>User Management</CardTitle>
@@ -115,12 +117,18 @@ export default function UsersPage() {
             ))}
           </div>
         </CardContent>
+        <div className="flex justify-center items-center gap-4 py-4">
+          <Button disabled={page === 0} onClick={() => setPage(page - 1)}>Previous</Button>
+          <span>Page {page + 1} of {usersPage?.totalPages ?? 1}</span>
+          <Button
+            // disabled={page + 1 >= (usersPage?.totalPages ?? 1)}
+            onClick={() => {setPage(page + 1); console.log("Next page:",  page)}}
+          >Next</Button>
+        </div>
       </Card>
- 
+
       <UserDialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen} mode="create" />
- 
       <UserDialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen} mode="edit" user={selectedUser} />
- 
       <DeleteUserDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen} user={selectedUser} />
     </div>
   )

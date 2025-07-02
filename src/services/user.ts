@@ -22,13 +22,38 @@ interface User {
   address?: Address;
 }
 
+interface PaginatedResponse<T> {
+  content: T[]
+  totalPages: number
+  totalElements: number
+  size: number
+  number: number
+  // ...other fields if needed
+}
+
 export const userService = {
-  async getUsers() {
+  /**
+   * Fetch paginated users from backend. Returns { content, totalPages, totalElements, ... }
+   * @param page Zero-based page number
+   * @param size Page size
+   */
+  async getUsers(page = 0, size = 2) {
     try {
-      return await api<User[]>("/users")
+      const response = await api<PaginatedResponse<User>>(`/users?page=${page}&size=${size}`);
+      // Defensive: If backend returns array, wrap in paginated structure
+      if (Array.isArray(response)) {
+        return {
+          content: response,
+          totalPages: 1,
+          totalElements: response.length,
+          size,
+          number: page
+        };
+      }
+      return response;
     } catch (error) {
-      console.error("Error fetching users:", error)
-      throw error
+      console.error("Error fetching users:", error);
+      throw error;
     }
   },
 

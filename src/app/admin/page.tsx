@@ -30,28 +30,39 @@ interface Notification {
   createdAt: string;
 }
 
+import { userService } from '@/services/user';
+
 export default function AdminDashboard() {
   const { user } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [selectedTab, setSelectedTab] = useState('users');
+  // Pagination state
+  const [page, setPage] = useState(1); // 1-based for UI
+  const [size] = useState(2); // default page size
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalUsers, setTotalUsers] = useState(0);
 
   useEffect(() => {
-    fetchUsers();
+    fetchUsers(page, size);
     fetchAddresses();
     fetchNotifications();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const fetchUsers = async () => {
+  useEffect(() => {
+    fetchUsers(page, size);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, size]);
+
+  const fetchUsers = async (pageNum = 1, pageSize = 2) => {
     try {
-      const response = await fetch('/api/users', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      const data = await response.json();
-      setUsers(data);
+      // userService expects 0-based page
+      const data = await userService.getUsers(pageNum - 1, pageSize);
+      setUsers(data.content);
+      setTotalPages(data.totalPages || 1);
+      setTotalUsers(data.totalElements || data.content.length);
     } catch (error) {
       console.error('Error fetching users:', error);
     }
