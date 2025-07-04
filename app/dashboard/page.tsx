@@ -43,17 +43,19 @@ export default function DashboardPage() {
     try {
       setLoading(true)
       // Fetch users count
-      const users = await userService.getUsers()
+      const usersResponse = await userService.getUsers()
+      console.log('usersResponse:', usersResponse)
 
       // Fetch notifications
       let unreadCount = 0;
       if (state.user && state.user.id) {
-        const notifications = await notificationService.getNotifications(state.user.id)
+        const notificationsResponse = await notificationService.getNotifications(state.user.id)
+        const notifications = Array.isArray(notificationsResponse.content) ? notificationsResponse.content : [];
         unreadCount = notifications.filter((n: Notification) => !n.read).length
       }
 
       setStats({
-        totalUsers: users.length,
+        totalUsers: usersResponse.totalSize, // <-- use totalSize for total users
         totalAddresses: 0, // TODO: Implement address service
         unreadNotifications: unreadCount
       })
