@@ -28,7 +28,7 @@ export default function NotificationsPage() {
   const [loading, setLoading] = useState(true)
   const [broadcastOpen, setBroadcastOpen] = useState(false)
   const [page, setPage] = useState(0) // 0-based
-  const [size, setSize] = useState(2) // notifications per page
+  const [size, setSize] = useState(5) // notifications per page
   const [totalPages, setTotalPages] = useState(1)
   const [totalNotifications, setTotalNotifications] = useState(0)
 
@@ -45,7 +45,7 @@ export default function NotificationsPage() {
   }
 
   // Memoized fetch function to prevent unnecessary re-renders
-  const fetchNotifications = useCallback(async (pageNum: number = 0, pageSize: number = 2) => {
+  const fetchNotifications = useCallback(async (pageNum: number = 0, pageSize: number = 5) => {
     if (!state.user?.id) {
       console.warn('User ID not available, skipping fetch')
       setLoading(false)
