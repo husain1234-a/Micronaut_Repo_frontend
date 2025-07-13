@@ -109,7 +109,7 @@ import { getToken } from './auth';
 
 
 const SERVICE_ENDPOINTS = {
-  USER_SERVICE: 'http://localhost:8080',      // User Management Service
+  USER_SERVICE: 'http://localhost:8081',      // User Management Service
   NOTIFICATION_SERVICE: 'http://localhost:9000', // Notification Service
  
 };

@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast"
 import { login as apiLogin } from "@/src/services/auth"
 import { handleLoginResponse } from "@/src/utils/auth"
 import Cookies from 'js-cookie'
+import "./login.css"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -44,15 +45,16 @@ export default function LoginPage() {
 
       // Update app context
       console.log('🔄 Updating application context...');
-      dispatch({ 
-        type: "SET_USER", 
+      dispatch({
+        type: "SET_USER",
         payload: userData
       })
       console.log('✅ Application context updated');
 
       toast({
-        title: "Login successful",
-        description: "Welcome back!",
+        title: "Login Successful",
+        description: "Welcome back! You are now signed in.",
+        variant: "default",
       })
 
       console.log('🚀 Redirecting to dashboard...');
@@ -67,8 +69,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center gradient-bg py-12 px-4 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-md card-glow animate-fade-in">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">Sign in</CardTitle>
           <CardDescription className="text-center">
@@ -82,7 +84,7 @@ export default function LoginPage() {
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            <div className="space-y-2">
+            <div className="space-y-2 form-element">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
@@ -93,7 +95,7 @@ export default function LoginPage() {
                 required
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 form-element">
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"

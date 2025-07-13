@@ -44,8 +44,8 @@ export default function AddressesPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Addresses</h1>
-          <p className="text-gray-600">Manage user addresses and locations</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Addresses</h1>
+          <p className="text-gray-600 dark:text-gray-300">Manage user addresses and locations</p>
         </div>
         <Button onClick={() => setIsCreateDialogOpen(true)}>
           <Plus className="w-4 h-4 mr-2" />
@@ -77,10 +77,10 @@ export default function AddressesPage() {
                   </div>
                   <div>
                     <h3 className="font-medium">{address.street}</h3>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       {address.city}, {address.state} {address.zipCode}
                     </p>
-                    <p className="text-xs text-gray-400">Owner: {getUserName(address.userId)}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-300">Owner: {getUserName(address.userId)}</p>
                   </div>
                   <Badge
                     variant={address.type === "home" ? "default" : address.type === "work" ? "secondary" : "outline"}

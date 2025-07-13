@@ -1,17 +1,19 @@
 "use client"
 
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { useAppContext } from "@/app/providers"
-import { Users, MapPin, Bell, Settings, LogOut, Home } from "lucide-react"
+import { Users, MapPin, Bell, Settings, LogOut, Home, Moon, Sun } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import Cookies from 'js-cookie'
 import { cn } from "@/lib/utils"
+import "./dashboard.css"
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { state, dispatch } = useAppContext()
   const router = useRouter()
+  const pathname = usePathname()
   const { toast } = useToast()
 
   const handleLogout = () => {
@@ -42,12 +44,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   // Get user's full name
-  const userFullName = state.user?.firstName && state.user?.lastName 
+  const userFullName = state.user?.firstName && state.user?.lastName
     ? `${state.user.firstName} ${state.user.lastName}`
     : state.user?.email || 'User';
 
   // Define navigation items based on user role
-  const navigation = state.user?.role === 'ADMIN' 
+  const navigation = state.user?.role === 'ADMIN'
     ? [
         { name: "Dashboard", href: "/dashboard", icon: Home },
         { name: "Users", href: "/dashboard/users", icon: Users },
@@ -64,37 +66,43 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       ];
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <nav className="bg-white shadow-sm">
+    <div className="min-h-screen gradient-bg">
+      <nav className="bg-white/10 shadow-sm backdrop-blur-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex">
+          <div className="flex justify-between h-16 items-center w-full">
+            <div className="flex items-center flex-1 min-w-0">
               <div className="flex-shrink-0 flex items-center">
-                <h1 className="text-xl font-bold">User Management</h1>
+                <h1 className="text-xl font-bold text-white whitespace-nowrap">User Management</h1>
               </div>
-              <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+              <div className="hidden sm:ml-6 sm:flex sm:space-x-2 flex-1 min-w-0">
                 {navigation.map((item) => (
                   <Link
                     key={item.name}
                     href={item.href}
                     className={cn(
-                      item.href === "/dashboard" && "text-primary font-semibold"
+                      "flex items-center text-white nav-link",
+                      pathname === item.href && "nav-link-active"
                     )}
                   >
                     <item.icon className="h-5 w-5 mr-2" />
-                    {item.name}
+                    <span className="truncate">{item.name}</span>
                   </Link>
                 ))}
               </div>
             </div>
-            <div className="flex items-center">
-              <span className="text-sm font-medium text-gray-700 mr-4">
-                Welcome, {userFullName}
-              </span>
+            <div className="flex items-center min-w-max ml-4">
+              <Button
+                variant="ghost"
+                className="text-white hover:bg-white/20 mr-2"
+                onClick={() => dispatch({ type: "SET_THEME", payload: state.theme === 'dark' ? 'light' : 'dark' })}
+                aria-label="Toggle theme"
+              >
+                {state.theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              </Button>
               <Button
                 variant="ghost"
                 onClick={handleLogout}
-                className="text-gray-700 hover:text-gray-900"
+                className="text-white hover:bg-white/20"
               >
                 <LogOut className="h-5 w-5 mr-2" />
                 Logout
@@ -104,7 +112,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 animate-fade-in">
         {children}
       </main>
     </div>

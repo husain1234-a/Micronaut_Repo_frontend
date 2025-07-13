@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useToast } from "@/hooks/use-toast"
+import "../login/login.css"
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -62,8 +63,8 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center gradient-bg py-12 px-4 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-md card-glow animate-fade-in">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">Create account</CardTitle>
           <CardDescription className="text-center">Enter your information to create a new account</CardDescription>
@@ -76,16 +77,16 @@ export default function RegisterPage() {
               </Alert>
             )}
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
+              <div className="space-y-2 form-element">
                 <Label htmlFor="firstName">First name</Label>
                 <Input id="firstName" name="firstName" value={formData.firstName} onChange={handleChange} required />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 form-element">
                 <Label htmlFor="lastName">Last name</Label>
                 <Input id="lastName" name="lastName" value={formData.lastName} onChange={handleChange} required />
               </div>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 form-element">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
@@ -97,7 +98,7 @@ export default function RegisterPage() {
                 required
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 form-element">
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
@@ -108,7 +109,7 @@ export default function RegisterPage() {
                 required
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 form-element">
               <Label htmlFor="confirmPassword">Confirm password</Label>
               <Input
                 id="confirmPassword"

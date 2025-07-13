@@ -90,22 +90,22 @@ export default function PasswordRequestsPage() {
     <div className="max-w-4xl mx-auto py-8">
       <Card>
         <CardHeader>
-          <CardTitle>Password Change Requests</CardTitle>
+          <CardTitle className="dark:text-white">Password Change Requests</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <p className="text-center text-gray-500">Loading requests...</p>
+            <p className="text-center text-gray-500 dark:text-gray-400">Loading requests...</p>
           ) : requests.length === 0 ? (
-            <p className="text-center text-gray-500">No pending password change requests</p>
+            <p className="text-center text-gray-500 dark:text-gray-400">No pending password change requests</p>
           ) : (
             <div className="space-y-4">
               {requests.map((req) => (
                 <div key={req.id} className="p-4 border rounded-lg flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                   <div>
-                    <div className="font-medium">
-                      {req.userFirstName} {req.userLastName} <span className="text-xs text-gray-400">({req.userEmail})</span>
+                    <div className="font-medium dark:text-white">
+                      {req.userFirstName} {req.userLastName} <span className="text-xs text-gray-400 dark:text-gray-300">({req.userEmail})</span>
                     </div>
-                    <div className="text-xs text-gray-500 mt-1">Requested at: {new Date(req.createdAt).toLocaleString()}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Requested at: {new Date(req.createdAt).toLocaleString()}</div>
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge variant="secondary">{req.status}</Badge>

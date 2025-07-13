@@ -60,7 +60,7 @@ export default function NotificationsPage() {
       console.log(  'Fetched notifications:', data);
       setNotifications(sortNotifications(data.content || []))
       setTotalPages(data.totalPages || 1)
-      setTotalNotifications(data.totalSize || (data.content ? data.content.length : 0))
+      setTotalNotifications(data.totalElements || (data.content ? data.content.length : 0))
     } catch (error) {
       console.error('Error fetching notifications:', error)
       toast({
@@ -73,26 +73,15 @@ export default function NotificationsPage() {
     }
   }, [state.user?.id, toast])
 
-  // Effect for initial load and periodic refresh
+  // Remove polling/interval effect
+  // Only fetch notifications on mount and when page/size changes
   useEffect(() => {
     if (!state.user?.id) {
       console.log('User not available yet')
       return
     }
-
-    // Initial fetch
     fetchNotifications(page, size)
-
-    // Set up periodic refresh
-    const interval = setInterval(() => {
-      fetchNotifications(page, size)
-    }, 10000)
-
-    // Cleanup
-    return () => {
-      clearInterval(interval)
-    }
-  }, [fetchNotifications, page, size]) // Now properly depends on fetchNotifications
+  }, [state.user?.id, page, size])
 
   const handleMarkAsRead = async (notificationId: string) => {
     try {
@@ -186,6 +175,9 @@ export default function NotificationsPage() {
 
   return (
     <div className="max-w-4xl mx-auto py-8">
+      {state.user?.role !== 'ADMIN' && (
+        <h2 className="text-2xl font-bold mb-6 text-white dark:text-white">Welcome, {state.user?.firstName ? `${state.user.firstName} ${state.user.lastName}` : "User"}!</h2>
+      )}
       {state.user?.role === 'ADMIN' && (
         <div className="flex justify-end mb-4">
           <Button
@@ -200,16 +192,16 @@ export default function NotificationsPage() {
       
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 dark:text-white">
             <Bell className="h-6 w-6" />
             Notifications
           </CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <p className="text-center text-gray-500">Loading notifications...</p>
+            <p className="text-center text-gray-500 dark:text-gray-400">Loading notifications...</p>
           ) : notifications.length === 0 ? (
-            <p className="text-center text-gray-500">No notifications yet</p>
+            <p className="text-center text-gray-500 dark:text-gray-400">No notifications yet</p>
           ) : (
             <>
               <div className="space-y-4">
@@ -217,42 +209,40 @@ export default function NotificationsPage() {
                   <div
                     key={notification.id}
                     className={`p-4 rounded-lg border ${
-                      notification.read ? "bg-gray-50" : "bg-white"
+                      notification.read ? "bg-gray-50 dark:bg-gray-800" : "bg-white dark:bg-gray-900"
                     }`}
                   >
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="font-medium">{notification.title}</h3>
-                        <p className="text-sm text-gray-600 mt-1">
-                          {notification.message}
-                        </p>
-                        <p className="text-xs text-gray-400 mt-2">
-                          {new Date(notification.createdAt).toLocaleString()}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge
-                          className={`${getBadgeColor(notification.type)} text-white`}
-                        >
-                          {notification.type}
-                        </Badge>
-                        {!notification.read && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleMarkAsRead(notification.id)}
-                          >
-                            <Check className="h-4 w-4" />
-                          </Button>
-                        )}
+                    <div>
+                      <h3 className="font-medium dark:text-white">{notification.title}</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                        {notification.message}
+                      </p>
+                      <p className="text-xs text-gray-400 dark:text-gray-300 mt-2">
+                        {new Date(notification.createdAt).toLocaleString()}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge
+                        className={`${getBadgeColor(notification.type)} text-white`}
+                      >
+                        {notification.type}
+                      </Badge>
+                      {!notification.read && (
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDelete(notification.id)}
+                          onClick={() => handleMarkAsRead(notification.id)}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Check className="h-4 w-4" />
                         </Button>
-                      </div>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDelete(notification.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
                 ))}

@@ -65,8 +65,8 @@ export default function UsersPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Users</h1>
-          <p className="text-gray-600">Manage system users and their permissions</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Users</h1>
+          <p className="text-gray-600 dark:text-gray-300">Manage system users and their permissions</p>
         </div>
         <Button onClick={() => setIsCreateDialogOpen(true)}>
           <Plus className="w-4 h-4 mr-2" />
@@ -101,7 +101,7 @@ export default function UsersPage() {
                     <h3 className="font-medium">
                       {(user.firstName || user.firstname) + " " + (user.lastName || user.lastname)}
                     </h3>
-                    <p className="text-sm text-gray-500">{user.email}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
                   </div>
                   <Badge variant={user.role === "admin" ? "default" : "secondary"}>{user.role}</Badge>
                 </div>

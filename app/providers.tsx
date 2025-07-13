@@ -10,6 +10,8 @@ interface User {
   id: string
   email: string
   role: string
+  firstName: string
+  lastName: string
 }
 
 interface Address {
@@ -41,6 +43,7 @@ interface AppState {
   isAuthenticated: boolean
   loading: boolean
   error: string | null
+  theme: 'light' | 'dark'
 }
 
 type AppAction =
@@ -57,6 +60,7 @@ type AppAction =
   | { type: "UPDATE_ADDRESS"; payload: Address }
   | { type: "DELETE_ADDRESS"; payload: string }
   | { type: "MARK_NOTIFICATION_READ"; payload: string }
+  | { type: "SET_THEME"; payload: 'light' | 'dark' }
 
 // Initialize state from localStorage if available
 const getInitialState = (): AppState => {
@@ -69,11 +73,13 @@ const getInitialState = (): AppState => {
       isAuthenticated: false,
       loading: false,
       error: null,
+      theme: 'light',
     }
   }
 
   const storedUser = localStorage.getItem('user')
   const user = storedUser ? JSON.parse(storedUser) : null
+  const storedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null
 
   return {
     user,
@@ -83,6 +89,7 @@ const getInitialState = (): AppState => {
     isAuthenticated: !!user,
     loading: false,
     error: null,
+    theme: storedTheme || 'light',
   }
 }
 
@@ -135,6 +142,8 @@ function appReducer(state: AppState, action: AppAction): AppState {
           notification.id === action.payload ? { ...notification, read: true } : notification,
         ),
       }
+    case "SET_THEME":
+      return { ...state, theme: action.payload }
     default:
       return state
   }
@@ -156,6 +165,18 @@ export function Providers({ children }: { children: ReactNode }) {
       localStorage.removeItem('user')
     }
   }, [state.user])
+
+  // Sync theme with localStorage and html class
+  useEffect(() => {
+    localStorage.setItem('theme', state.theme)
+    if (typeof window !== 'undefined') {
+      if (state.theme === 'dark') {
+        document.documentElement.classList.add('dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+      }
+    }
+  }, [state.theme])
 
   // Poll notifications for real-time updates
   useEffect(() => {

@@ -55,7 +55,7 @@ export default function DashboardPage() {
       }
 
       setStats({
-        totalUsers: usersResponse.totalSize, // <-- use totalSize for total users
+        totalUsers: usersResponse.totalElements, // <-- fixed: use totalElements for total users
         totalAddresses: 0, // TODO: Implement address service
         unreadNotifications: unreadCount
       })
@@ -121,6 +121,7 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-7xl mx-auto py-8">
+      <h2 className="text-2xl font-bold mb-6 text-white dark:text-white">Welcome, {state.user?.firstName ? `${state.user.firstName} ${state.user.lastName}` : (state.user?.email || "User")}!</h2>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -129,7 +130,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalUsers}</div>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               Active users in the system
             </p>
           </CardContent>
@@ -153,7 +154,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.unreadNotifications}</div>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               Pending notifications
             </p>
           </CardContent>
