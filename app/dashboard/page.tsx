@@ -79,7 +79,7 @@ export default function DashboardPage() {
       <div className="max-w-4xl mx-auto py-8">
         <Card>
           <CardHeader>
-            <CardTitle>Welcome, {state.user?.email || "User"}!</CardTitle>
+            <CardTitle>Welcome, {state.user?.firstName ? `${state.user.firstName} ${state.user.lastName}` : "User"}!</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
