@@ -25,7 +25,7 @@ export function useFcmRegistration(user: { isAuthenticated: boolean }) {
       .then((token) => {
         console.log('FCM token:', token);
         if (token) {
-          api('http://localhost:8080/api/fcm/register', {
+          api('http://localhost:8081/api/fcm/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ token }),
